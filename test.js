@@ -57,7 +57,7 @@ describe('Listing cities on /cities', function(){
 	it('Return Initials Cities', function(done){
 		request(app)
 			.get('/cities')
-			.expect(/\[(\"\w+\"\,*)+\]/, done);
+			.expect(/\[(\"([A-Za-z0-9_]|\s)+\"\,*)+\]/, done);
 	});
 
 });

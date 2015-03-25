@@ -3,7 +3,8 @@ var app = require('./app');
 
 var redis = require('redis');
 var client = redis.createClient();
-client.select('test'.length);
+
+client.select(process.env.NODE_ENV.length);
 client.flushdb();
 
 //this will execute every time that we run de app...
@@ -65,8 +66,6 @@ describe('Listing cities on /cities', function(){
 
 
 describe('Creating new cities', function(){
-
-
 	
 	it('Returns a 201 status code', function(done){
 		request(app)
@@ -75,7 +74,6 @@ describe('Creating new cities', function(){
 			.expect(201, done);
 	});
 
-
 	it('Returns the city name', function(done){
 		request(app)
 			.post('/cities')
@@ -83,11 +81,34 @@ describe('Creating new cities', function(){
 			.expect(/springfield/i, done);
 	});
 
+	it('Validate city name and description', function(done){
+		request(app)
+			.post('/cities')
+			.send('name=&description=')
+			.expect(400, done);
+	});
+
 });
 
 
 
 
+describe('Deleting cities', function(){
+
+	client.hset('cities', 'Banana', 'a tasty fruit.');
+
+	it('Returns a 204 status code', function(done){
+		request(app)
+			.delete('/cities/Banana')
+			.expect(204)
+			.end(function(error){
+				if(error) throw error;
+				//client.flushdb();
+				done();
+			});
+	});
+
+});
 
 
 

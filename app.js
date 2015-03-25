@@ -15,7 +15,7 @@ if (process.env.REDISTOGO_URL) {
 	client.auth(rtg.auth.split(":")[1]);
 } else {
 	client = redis.createClient();
-	client.select('development'.length);
+	client.select((process.env.NODE_ENV || 'development').length);
 }
 //End Redis connection
 
@@ -29,15 +29,24 @@ app.get('/cities', function(request, response){
 });
 
 app.post('/cities', urlencode, function(request, response){
-
-	console.log(request.body);
-
 	var newCity = request.body;
-	client.hset('cities', newCity.name, newCity.description, function(error){
 
+	if(!newCity.name || !newCity.description) {
+		response.sendStatus(400);
+		return false;
+	}
+
+	client.hset('cities', newCity.name, newCity.description, function(error){
 		if(error) throw error;
 		response.status(201).json(newCity.name);
+	});
+});
 
+
+app.delete('/cities/:name', function(request, response){
+	client.hdel('cities', request.params.name, function(error){
+		if(error) throw error;
+		response.sendStatus(204);
 	});
 });
 
